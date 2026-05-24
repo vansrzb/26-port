@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 
 // ─── DATA ─────────────────────────────────────────────────────
 const skills = [
-  { label: 'Systems Analyst', icon: '◈', color: '#60a5fa', desc: 'BPMN · UML · ERD' },
+  { label: 'System Analyst', icon: '◈', color: '#60a5fa', desc: 'BPMN · UML · ERD' },
   { label: 'Full Stack Dev',  icon: '⬡', color: '#34d399', desc: 'End-to-End · Scalable' },
   { label: 'Frontend Dev',   icon: '◎', color: '#a78bfa', desc: 'React · TypeScript' },
-  { label: 'Backend Dev',    icon: '◫', color: '#fb923c', desc: 'Node · PostgreSQL' },
+  { label: 'Backend Dev',    icon: '◫', color: '#fb923c', desc: 'Node · MySQL' },
 ];
-const techStack = ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'Python'];
+const techStack = ['React', 'TypeScript', 'Node.js', 'MySQL', 'PHP', 'Ruby'];
 
 // ─── ANIMATED COUNTER ─────────────────────────────────────────
 function Counter({ target, delay }: { target: number; delay: number }) {
@@ -283,7 +283,7 @@ export default function Hero() {
           transition={{ delay: 0.88 }}
           style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: mobile ? 18 : 26, flexWrap: 'wrap' }}
         >
-          {['SYSTEMS ANALYST', 'FULL STACK DEVELOPER'].map((t, i) => (
+          {['SYSTEM ANALYST', 'FULL STACK DEVELOPER'].map((t, i) => (
             <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: mobile ? 9 : 10.5, color: 'rgba(148,163,184,0.45)', letterSpacing: '0.14em' }}>{t}</span>
               {i === 0 && <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(96,165,250,0.35)' }}/>}
@@ -365,7 +365,7 @@ export default function Hero() {
           transition={{ delay: mobile ? 1.3 : 1.45 }}
           style={{ display: 'flex', gap: mobile ? 20 : 28, alignItems: 'center', marginBottom: mobile ? 18 : 26, flexWrap: 'wrap' }}
         >
-          {[{ t: 12, label: 'Systems Designed' }, { t: 8, label: 'Projects Shipped' }].map((s, i) => (
+          {[{ t: 9, label: 'Systems Designed' }, { t: 6, label: 'Projects Shipped' }].map((s, i) => (
             <div key={s.label}>
               <div style={{
                 fontFamily: "'Bebas Neue', Georgia, sans-serif",

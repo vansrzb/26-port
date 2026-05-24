@@ -43,14 +43,6 @@ export default function Projects() {
                 >
                   <GitFork size={16} />
                 </motion.a>
-                <motion.a
-                  href={proj.link}
-                  className="text-slate-500 hover:text-blue-400 transition-colors"
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <ExternalLink size={16} />
-                </motion.a>
               </div>
             </div>
 

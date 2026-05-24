@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoadingScreenProps {
@@ -9,26 +9,23 @@ interface LoadingScreenProps {
 export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [exiting, setExiting] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
 
+  // Progress ticker
   useEffect(() => {
     const start = performance.now();
     let raf: number;
-
     const tick = (now: number) => {
       const elapsed = now - start;
       const raw = Math.min(elapsed / (duration * 0.88), 1);
-      // Ease: fast start, slow near end
       const eased = 1 - Math.pow(1 - raw, 2.2);
       setProgress(Math.floor(eased * 100));
-      if (raw < 1) {
-        raf = requestAnimationFrame(tick);
-      }
+      if (raw < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-
     const t1 = setTimeout(() => setExiting(true), duration * 0.92);
     const t2 = setTimeout(() => onComplete?.(), duration);
-
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(t1);
@@ -36,17 +33,195 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
     };
   }, []);
 
-  // SVG circle charge fill — fill from bottom to top using clipPath
+  // Canvas plasma effect — strict black & blue palette
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const SIZE = 160;
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+
+    const cx = SIZE / 2;
+    const cy = SIZE / 2;
+    const R = SIZE / 2 - 4;
+
+    // All arcs: blue only
+    const arcCount = 6;
+    const arcs = Array.from({ length: arcCount }, (_, i) => ({
+      angle: (i / arcCount) * Math.PI * 2,
+      speed: 0.008 + Math.random() * 0.006,
+      radius: 28 + Math.random() * 18,
+      length: 0.3 + Math.random() * 0.5,
+      width: 1 + Math.random() * 1.5,
+      // varied blue shades: bright blue, mid blue, deep blue
+      color: ['59,130,246', '96,165,250', '29,78,216'][i % 3],
+    }));
+
+    // Sparks
+    const sparks: { x: number; y: number; vx: number; vy: number; life: number; maxLife: number }[] = [];
+    let frame = 0;
+
+    const spawnSpark = (prog: number) => {
+      if (Math.random() > 0.18 + prog * 0.004) return;
+      const angle = Math.random() * Math.PI * 2;
+      const r = (R * 0.3 + Math.random() * R * 0.5) * (prog / 100);
+      sparks.push({
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        vx: (Math.random() - 0.5) * 1.8,
+        vy: (Math.random() - 0.5) * 1.8,
+        life: 0,
+        maxLife: 18 + Math.random() * 22,
+      });
+    };
+
+    const draw = () => {
+      const prog = Math.max(0, Math.min(100, progress));
+      frame++;
+
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      // Clip to circle
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Pure black background
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, SIZE, SIZE);
+
+      // Core plasma glow — grows with progress
+      const coreRadius = 6 + (prog / 100) * 38;
+      const coreAlpha = 0.12 + (prog / 100) * 0.28;
+
+      // Outer halo — blue only
+      const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius * 2.8);
+      halo.addColorStop(0, `rgba(59,130,246,${coreAlpha})`);
+      halo.addColorStop(0.5, `rgba(29,78,216,${coreAlpha * 0.6})`);
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, SIZE, SIZE);
+
+      // Inner plasma core — white-blue center fading to deep blue
+      const inner = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
+      inner.addColorStop(0, `rgba(219,234,254,${0.6 + (prog / 100) * 0.35})`);
+      inner.addColorStop(0.35, `rgba(96,165,250,${0.45 + (prog / 100) * 0.3})`);
+      inner.addColorStop(0.75, `rgba(29,78,216,${0.2 + (prog / 100) * 0.2})`);
+      inner.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = inner;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreRadius * 1.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orbiting energy arcs — all blue shades
+      arcs.forEach((arc) => {
+        arc.angle += arc.speed * (1 + (prog / 100) * 1.4);
+        const orbitR = arc.radius * (0.3 + (prog / 100) * 0.7);
+        const endAngle = arc.angle + arc.length * Math.PI * 2;
+        const alpha = 0.2 + (prog / 100) * 0.7;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, orbitR, arc.angle, endAngle);
+        ctx.strokeStyle = `rgba(${arc.color},${alpha})`;
+        ctx.lineWidth = arc.width;
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 7;
+        ctx.shadowColor = `rgba(${arc.color},0.9)`;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+
+      // Electric tendrils — blue only
+      if (prog > 15) {
+        const tendrilCount = Math.floor(3 + (prog / 100) * 7);
+        for (let t = 0; t < tendrilCount; t++) {
+          const baseAngle = (t / tendrilCount) * Math.PI * 2 + frame * 0.015;
+          const len = coreRadius + (R - coreRadius) * (prog / 100) * (0.4 + Math.sin(frame * 0.05 + t) * 0.3);
+          const segments = 5;
+          const alpha = 0.15 + (prog / 100) * 0.35;
+
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          for (let s = 0; s < segments; s++) {
+            const frac = (s + 1) / segments;
+            const jitter = (Math.random() - 0.5) * 10 * (1 - frac);
+            const nx = cx + Math.cos(baseAngle + jitter * 0.1) * len * frac;
+            const ny = cy + Math.sin(baseAngle + jitter * 0.1) * len * frac;
+            ctx.lineTo(nx + jitter, ny + jitter);
+          }
+          ctx.strokeStyle = `rgba(147,197,253,${alpha * (Math.random() * 0.4 + 0.6)})`;
+          ctx.lineWidth = 0.6 + Math.random() * 0.6;
+          ctx.lineCap = 'round';
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = 'rgba(96,165,250,0.7)';
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // Inner ring fill — bright blue arc growing clockwise
+      if (prog > 5) {
+        const ringR = R - 10;
+        const ringAlpha = 0.2 + (prog / 100) * 0.5;
+        const endA = -Math.PI / 2 + (prog / 100) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, ringR, -Math.PI / 2, endA);
+        ctx.strokeStyle = `rgba(59,130,246,${ringAlpha})`;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(96,165,250,0.8)';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // Sparks — light blue-white
+      spawnSpark(prog);
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
+        if (s.life > s.maxLife) { sparks.splice(i, 1); continue; }
+        const t2 = 1 - s.life / s.maxLife;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 1.2 * t2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(186,219,255,${t2 * 0.9})`;
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Outer progress ring track — very dark blue
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, -Math.PI / 2, Math.PI * 2 - Math.PI / 2);
+      ctx.strokeStyle = 'rgba(29,78,216,0.15)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Outer progress ring fill — bright blue
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + (prog / 100) * Math.PI * 2);
+      ctx.strokeStyle = prog === 100 ? '#93c5fd' : 'rgba(96,165,250,0.75)';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.shadowBlur = prog === 100 ? 14 : 0;
+      ctx.shadowColor = '#3b82f6';
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    animRef.current = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [progress]);
+
   const SIZE = 160;
-  const STROKE = 3;
-  const R = (SIZE - STROKE * 2) / 2;
-  const CIRCUM = 2 * Math.PI * R;
-  // strokeDashoffset: full = CIRCUM (empty), 0 = full
-  const dashOffset = CIRCUM * (1 - progress / 100);
-
-  // Water fill level (bottom to top): 100% = top of circle
-  const fillY = SIZE - (SIZE * progress) / 100;
-
   const done = progress === 100;
 
   return (
@@ -59,7 +234,7 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
-            background: '#020409',
+            background: '#000000',
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             fontFamily: 'DM Mono, monospace',
@@ -73,55 +248,53 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
               0%   { background-position: 0% 50%; }
               100% { background-position: 200% 50%; }
             }
-            @keyframes ripple {
-              0%   { transform: scale(1);   opacity: 0.5; }
-              100% { transform: scale(1.5); opacity: 0; }
-            }
             @keyframes scanline {
               0%   { top: -2px; }
               100% { top: 100%; }
             }
-            .wave {
-              animation: waveAnim 2.2s linear infinite;
+            @keyframes plasmaRing {
+              0%   { transform: rotate(0deg); opacity: 0.25; }
+              50%  { opacity: 0.6; }
+              100% { transform: rotate(360deg); opacity: 0.25; }
             }
-            @keyframes waveAnim {
-              0%   { d: path("M0,8 C40,0 80,16 160,8 L160,80 L0,80 Z"); }
-              50%  { d: path("M0,12 C40,4 80,20 160,12 L160,80 L0,80 Z"); }
-              100% { d: path("M0,8 C40,0 80,16 160,8 L160,80 L0,80 Z"); }
+            @keyframes plasmaRing2 {
+              0%   { transform: rotate(0deg); opacity: 0.15; }
+              50%  { opacity: 0.4; }
+              100% { transform: rotate(-360deg); opacity: 0.15; }
             }
           `}</style>
 
-          {/* Dot grid */}
+          {/* Dot grid — deep blue dots on black */}
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle, rgba(96,165,250,0.055) 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px)',
             backgroundSize: '32px 32px',
             animation: 'gridDrift 24s linear infinite',
           }}/>
 
-          {/* Scan line */}
+          {/* Scan line — blue */}
           <div style={{
             position: 'absolute', left: 0, right: 0, height: 1,
-            background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.15), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.18), transparent)',
             animation: 'scanline 5s linear infinite',
           }}/>
 
-          {/* Ambient glow */}
+          {/* Ambient glow — blue only */}
           <div style={{
             position: 'absolute',
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 420, height: 420, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 68%)',
+            width: 500, height: 500, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(29,78,216,0.1) 0%, rgba(59,130,246,0.04) 50%, transparent 70%)',
             pointerEvents: 'none',
           }}/>
 
-          {/* Corner brackets */}
+          {/* Corner brackets — blue */}
           {[
-            { top: 24, left: 24, borderTop: '1.5px solid rgba(96,165,250,0.35)', borderLeft: '1.5px solid rgba(96,165,250,0.35)' },
-            { top: 24, right: 24, borderTop: '1.5px solid rgba(96,165,250,0.35)', borderRight: '1.5px solid rgba(96,165,250,0.35)' },
-            { bottom: 24, left: 24, borderBottom: '1.5px solid rgba(96,165,250,0.35)', borderLeft: '1.5px solid rgba(96,165,250,0.35)' },
-            { bottom: 24, right: 24, borderBottom: '1.5px solid rgba(96,165,250,0.35)', borderRight: '1.5px solid rgba(96,165,250,0.35)' },
+            { top: 24, left: 24, borderTop: '1.5px solid rgba(59,130,246,0.4)', borderLeft: '1.5px solid rgba(59,130,246,0.4)' },
+            { top: 24, right: 24, borderTop: '1.5px solid rgba(59,130,246,0.4)', borderRight: '1.5px solid rgba(59,130,246,0.4)' },
+            { bottom: 24, left: 24, borderBottom: '1.5px solid rgba(59,130,246,0.4)', borderLeft: '1.5px solid rgba(59,130,246,0.4)' },
+            { bottom: 24, right: 24, borderBottom: '1.5px solid rgba(59,130,246,0.4)', borderRight: '1.5px solid rgba(59,130,246,0.4)' },
           ].map((s, i) => (
             <motion.div
               key={i}
@@ -132,132 +305,61 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
             />
           ))}
 
-          {/* ── MAIN LOGO CHARGE ── */}
+          {/* MAIN LOGO CHARGE */}
           <motion.div
             initial={{ opacity: 0, scale: 0.88 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}
           >
-            {/* Circle charge unit */}
+            {/* Plasma circle unit */}
             <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
 
-              {/* Ripple when done */}
+              {/* Rotating outer rings — blue only */}
+              <div style={{
+                position: 'absolute', inset: -14, borderRadius: '50%',
+                border: '1px dashed rgba(59,130,246,0.22)',
+                animation: 'plasmaRing 8s linear infinite',
+              }}/>
+              <div style={{
+                position: 'absolute', inset: -22, borderRadius: '50%',
+                border: '1px dashed rgba(29,78,216,0.14)',
+                animation: 'plasmaRing2 12s linear infinite',
+              }}/>
+
+              {/* Done ripple — blue */}
               {done && (
                 <>
                   <motion.div
-                    animate={{ scale: [1, 1.55], opacity: [0.45, 0] }}
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
                     transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut' }}
                     style={{
-                      position: 'absolute',
-                      inset: -8, borderRadius: '50%',
-                      border: '1.5px solid rgba(96,165,250,0.5)',
+                      position: 'absolute', inset: -8, borderRadius: '50%',
+                      border: '1.5px solid rgba(96,165,250,0.55)',
                     }}
                   />
                   <motion.div
-                    animate={{ scale: [1, 1.7], opacity: [0.3, 0] }}
-                    transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut', delay: 0.25 }}
+                    animate={{ scale: [1, 1.8], opacity: [0.3, 0] }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut', delay: 0.3 }}
                     style={{
-                      position: 'absolute',
-                      inset: -8, borderRadius: '50%',
-                      border: '1px solid rgba(96,165,250,0.3)',
+                      position: 'absolute', inset: -8, borderRadius: '50%',
+                      border: '1px solid rgba(59,130,246,0.3)',
                     }}
                   />
                 </>
               )}
 
-              {/* SVG: water fill + ring */}
-              <svg
-                width={SIZE} height={SIZE}
-                viewBox={`0 0 ${SIZE} ${SIZE}`}
-                style={{ position: 'absolute', inset: 0 }}
-              >
-                <defs>
-                  {/* Clip to circle shape */}
-                  <clipPath id="circleClip">
-                    <circle cx={SIZE / 2} cy={SIZE / 2} r={R} />
-                  </clipPath>
-                </defs>
-
-                {/* Water fill — blue rect rising from bottom */}
-                <g clipPath="url(#circleClip)">
-                  <motion.rect
-                    x={0}
-                    y={fillY}
-                    width={SIZE}
-                    height={SIZE}
-                    fill={done ? 'rgba(37,99,235,0.55)' : 'rgba(37,99,235,0.38)'}
-                    style={{ transition: 'y 0.08s linear, fill 0.4s ease' }}
-                  />
-                  {/* Wave on top of fill */}
-                  <motion.rect
-                    x={0}
-                    y={fillY - 6}
-                    width={SIZE}
-                    height={12}
-                    fill={done ? 'rgba(96,165,250,0.45)' : 'rgba(96,165,250,0.3)'}
-                    style={{ transition: 'y 0.08s linear' }}
-                  />
-                  {/* Shimmer inside fill */}
-                  <motion.rect
-                    x={-SIZE}
-                    y={fillY}
-                    width={SIZE * 0.6}
-                    height={SIZE}
-                    fill="rgba(255,255,255,0.06)"
-                    animate={{ x: [-SIZE, SIZE * 1.5] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.4 }}
-                    style={{ transition: 'y 0.08s linear' }}
-                  />
-                </g>
-
-                {/* Outer ring — always visible */}
-                <circle
-                  cx={SIZE / 2} cy={SIZE / 2} r={R}
-                  fill="none"
-                  stroke="rgba(96,165,250,0.12)"
-                  strokeWidth={STROKE}
-                />
-                {/* Progress ring — drawn counter-clockwise from top */}
-                <circle
-                  cx={SIZE / 2} cy={SIZE / 2} r={R}
-                  fill="none"
-                  stroke={done ? '#60a5fa' : 'rgba(96,165,250,0.55)'}
-                  strokeWidth={STROKE}
-                  strokeLinecap="round"
-                  strokeDasharray={CIRCUM}
-                  strokeDashoffset={dashOffset}
-                  transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
-                  style={{ transition: 'stroke-dashoffset 0.08s linear, stroke 0.4s ease' }}
-                />
-              </svg>
-
-              {/* Profile photo — sits above fill */}
-              <div style={{
-                position: 'absolute', inset: STROKE + 2,
-                borderRadius: '50%', overflow: 'hidden',
-              }}>
-                <img
-                  src="/profile-2.png"
-                  alt="Ivan"
-                  style={{
-                    width: '100%', height: '100%',
-                    objectFit: 'cover', objectPosition: 'center top',
-                    display: 'block',
-                    // Darken photo so the water fill reads clearly on top
-                    filter: `brightness(${0.5 + (progress / 100) * 0.45}) contrast(1.05) saturate(0.85)`,
-                    transition: 'filter 0.12s linear',
-                  }}
-                />
-                {/* Dark overlay that lifts as fill rises */}
-                <div style={{
+              {/* Canvas: plasma effect */}
+              <canvas
+                ref={canvasRef}
+                style={{
                   position: 'absolute', inset: 0,
-                  background: `linear-gradient(0deg, rgba(2,4,9,0) ${progress}%, rgba(2,4,9,0.45) 100%)`,
-                  transition: 'background 0.08s linear',
-                }}/>
-              </div>
+                  width: SIZE, height: SIZE,
+                  borderRadius: '50%',
+                }}
+              />
 
-              {/* % counter — centered over photo */}
+              {/* % counter */}
               <div style={{
                 position: 'absolute', inset: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -266,23 +368,23 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
                 <span style={{
                   fontFamily: "'Bebas Neue', serif",
                   fontSize: 36, letterSpacing: '0.04em', lineHeight: 1,
-                  color: done ? '#fff' : 'rgba(220,235,255,0.92)',
-                  textShadow: '0 2px 12px rgba(0,0,0,0.7)',
-                  transition: 'color 0.3s',
+                  color: progress > 40 ? '#dbeafe' : 'rgba(191,219,254,0.9)',
+                  textShadow: '0 0 22px rgba(59,130,246,0.95), 0 2px 14px rgba(0,0,0,1)',
+                  transition: 'color 0.4s, text-shadow 0.4s',
                 }}>
                   {progress}<span style={{ fontSize: 18, color: 'rgba(96,165,250,0.8)' }}>%</span>
                 </span>
               </div>
             </div>
 
-            {/* Name */}
+            {/* Name — blue shimmer only */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <h1 style={{
                 fontFamily: "'Bebas Neue', serif",
                 fontSize: 38, fontWeight: 400,
                 letterSpacing: '0.08em', lineHeight: 1,
                 margin: 0,
-                background: 'linear-gradient(90deg, #60a5fa 0%, #93c5fd 45%, #3b82f6 100%)',
+                background: 'linear-gradient(90deg, #1d4ed8 0%, #60a5fa 40%, #93c5fd 65%, #3b82f6 100%)',
                 backgroundSize: '200% 100%',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -290,11 +392,11 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
               }}>Ivan Brilata</h1>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 16, height: 1, background: 'rgba(96,165,250,0.25)' }}/>
-                <span style={{ fontSize: 8.5, color: 'rgba(96,165,250,0.38)', letterSpacing: '0.2em' }}>
-                  {done ? 'WELCOME' : 'LOADING PORTFOLIO'}
+                <div style={{ width: 16, height: 1, background: 'rgba(59,130,246,0.3)' }}/>
+                <span style={{ fontSize: 8.5, color: 'rgba(59,130,246,0.45)', letterSpacing: '0.2em' }}>
+                  {done ? 'WELCOME' : 'CHARGING SYSTEMS'}
                 </span>
-                <div style={{ width: 16, height: 1, background: 'rgba(96,165,250,0.25)' }}/>
+                <div style={{ width: 16, height: 1, background: 'rgba(59,130,246,0.3)' }}/>
               </div>
             </div>
           </motion.div>
@@ -311,10 +413,15 @@ export default function LoadingScreen({ onComplete, duration = 2800 }: LoadingSc
           >
             <motion.div
               animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              style={{ width: 5, height: 5, borderRadius: '50%', background: done ? '#34d399' : '#3b82f6', boxShadow: `0 0 6px ${done ? '#34d399' : '#3b82f6'}`, transition: 'background 0.4s, box-shadow 0.4s' }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              style={{
+                width: 5, height: 5, borderRadius: '50%',
+                background: done ? '#60a5fa' : '#3b82f6',
+                boxShadow: `0 0 8px ${done ? '#60a5fa' : '#3b82f6'}`,
+                transition: 'background 0.4s, box-shadow 0.4s',
+              }}
             />
-            <span style={{ fontSize: 8.5, color: 'rgba(148,163,184,0.28)', letterSpacing: '0.16em' }}>
+            <span style={{ fontSize: 8.5, color: 'rgba(59,130,246,0.3)', letterSpacing: '0.16em' }}>
               SYSTEMS ANALYST · FULL STACK DEV · PHILIPPINES
             </span>
           </motion.div>

@@ -244,7 +244,7 @@ export default function Navbar() {
           {/* Right actions */}
           <div className="right-actions">
             <motion.a
-              href="mailto:vansrzb@email.com"
+              href="mailto:ibrilata.dev@gmail.com"
               className="email-btn desktop-email"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
@@ -288,7 +288,7 @@ export default function Navbar() {
                   </motion.button>
                 ))}
                 <motion.a
-                  href="mailto:vansrzb@email.com"
+                  href="mailto:ibrilata.dev@gmail.com"
                   className="email-btn"
                   style={{ marginTop: 10, alignSelf: 'flex-start' }}
                   initial={{ opacity: 0 }}

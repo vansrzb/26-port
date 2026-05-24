@@ -2,67 +2,146 @@ export const navLinks = ['Experience', 'Projects', 'Education', 'Skills', 'Conta
 
 export const experience = [
   {
-    role: 'Systems Analyst',
-    company: 'Your Company Name',
-    period: '2022 – Present',
-    location: 'Nasugbu, Batangas',
-    description:
-      'Led requirements gathering and system design for enterprise-grade applications. Bridged gap between stakeholders and dev teams, creating detailed process flows, data models, and functional specs.',
-    tags: ['Systems Analysis', 'UML', 'Agile', 'Business Process', 'SQL'],
+    role: 'System Analyst',
+    company: 'Datalink Creative Solutions Incorporation',
+    period: 'Jul 2025 – Jan 2026',
+    location: 'Metropolis Bagong Bayan, San Pablo City, Laguna',
+    description: [
+      'Analyzed user requirements through Prototypes and Flowcharts, delivering scalable software solutions that reduced response time by 40% ; ',
+      'Developed web-based systems for Records Management, CRM, and Business Permit transactions, improving process efficiency by 65% ; ',
+      'Collaborated with teams using Git and AI tools such as OpenAI and Anthropic Claude, accelerating development efficiency by 30%',
+    ],
+    tags: ['Systems Analysis', 'UML', 'Agile', 'Business Process', 'SQL', 'Git', 'OpenAI', 'Anthropic Claude'],
   },
   {
-    role: 'IT Intern / Junior Analyst',
-    company: 'Previous Company',
-    period: '2021 – 2022',
-    location: 'Metro Manila, PH',
-    description:
-      'Assisted in system documentation, user acceptance testing, and database maintenance. Developed internal tools to automate reporting workflows.',
-    tags: ['Documentation', 'UAT', 'MySQL', 'Python'],
+    role: 'Internship',
+    company: 'Management Information System',
+    period: 'Feb 2025 – May 2025',
+    location: 'San Pablo City, Laguna Capitol',
+    description: [
+      'Developed a web-based Queueing system for the MIS office, optimizing transaction flow and reducing customer waiting time by 60% ; ',
+      'Assisted citizens in using digital applications, improving user accessibility and reducing assistance time by 40%',
+    ],
+    tags: ['Web Development', 'Queue Management', 'Digital Assistance', 'UX'],
   },
 ];
 
 export const projects = [
   {
-    title: 'Enterprise Resource System',
+    title: 'Customer Relationship Management',
     description:
-      'Full-stack web app for inventory and HR management. Built with React, Node.js, and PostgreSQL. Features real-time dashboards, role-based access control, and automated report generation.',
-    tags: ['React', 'Node.js', 'PostgreSQL', 'REST API'],
+      'Integrated a real-time CRM system using Next.js and WebSockets, reducing operational complexity by 65% and enabling instant data synchronization.',
+    tags: ['TypeScript', 'Next.js', 'MySQL', 'WebSockets'],
+    date: 'Oct 25, 2025',
+    role: 'Full-Stack Developer',
     link: '#',
-    github: '#',
+    github: 'https://github.com/kevinbalocos/customer-relationship-management-system',
     featured: true,
   },
   {
-    title: 'Process Automation Tool',
+    title: 'Records Management System',
     description:
-      'Python-based automation suite that reduced manual data entry by 70%. Integrated with legacy systems via CSV/XML pipelines.',
-    tags: ['Python', 'Pandas', 'Automation', 'XML'],
+      'Developed a digital records management system, reducing storage complexity by 60% and improving document retrieval efficiency.',
+    tags: ['JavaScript', 'Node.js', 'MySQL'],
+    date: 'Jul 31, 2025',
+    role: 'Full-Stack Developer',
     link: '#',
-    github: '#',
+    github: 'https://github.com/kevinbalocos/records-management-cong-system',
     featured: false,
   },
   {
-    title: 'Portfolio Website',
+    title: 'Lantern',
     description:
-      'This very portfolio — built with Vite, React, TypeScript, TailwindCSS, and Framer Motion for smooth scroll-based animations.',
-    tags: ['React', 'TypeScript', 'Tailwind', 'Framer Motion'],
+      'A chatbot that lights the way to your thoughts — an AI-powered conversational interface built with a modern React front-end.',
+    tags: ['Ruby', 'JavaScript', 'React.js', 'Tailwind CSS'],
+    date: null,
+    role: 'Full-Stack Developer',
     link: '#',
-    github: '#',
+    github: 'https://github.com/vansrzb/lantern',
+    featured: true,
+  },
+  {
+    title: 'Business Permit System',
+    description:
+      'Designed a business permit application management system, streamlining processing time by 65% and improving transaction efficiency.',
+    tags: ['TypeScript', 'Node.js', 'MySQL'],
+    date: null,
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/kevinbalocos/business-permit-system',
     featured: false,
+  },
+  {
+    title: 'Evaluation System',
+    description:
+      'Built an Evaluation system that assesses teacher performance and tracks historical data, supporting 100+ student users across different college departments.',
+    tags: ['PHP', 'JavaScript', 'MySQL'],
+    date: 'Oct 1, 2024',
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/vansrzb/capstone-project-eva-lution',
+    featured: true,
+  },
+  {
+    title: 'DCSI Website',
+    description:
+      'Official website of Datalink Creative Solutions Incorporation, built with a modern tech stack for a professional and responsive web presence.',
+    tags: ['TypeScript', 'Next.js', 'Tailwind CSS'],
+    date: null,
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/kevinbalocos/DCSI-WEBSITE',
+    featured: false,
+  },
+  {
+    title: 'Queueing System',
+    description:
+      'Developed a web-based Queueing system for the MIS office, optimizing transaction flow and reducing customer waiting time by 60%.',
+    tags: ['PHP', 'JavaScript', 'MySQL'],
+    date: 'Feb 11, 2025',
+    role: 'Backend Developer',
+    link: '#',
+    github: 'https://github.com/kevinbalocos/Queueing-system',
+    featured: false,
+  },
+  {
+    title: 'IMS Cake Shop',
+    description:
+      'A system to manage inventory for a cake shop, handling stock tracking, product management, and order records.',
+    tags: ['PHP', 'JavaScript', 'CSS'],
+    date: null,
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/vansrzb/inventory-management-system-cake-shop',
+    featured: false,
+  },
+  {
+    title: 'Sales Dashboard',
+    description:
+      'A functional sales dashboard designed for a first client, providing clear data visualization and reporting tools.',
+    tags: ['Ruby', 'React.js', 'Tailwind CSS'],
+    date: null,
+    role: 'Full-Stack Developer',
+    link: '#',
+    featured: false,
+    github: 'https://github.com/vansrzb/sales-dashboard',
   },
 ];
 
 export const education = [
   {
     degree: 'Bachelor of Science in Information Technology',
-    school: 'Your University',
-    period: '2018 – 2022',
-    description: 'Graduated with honors. Specialized in software development and systems analysis. Capstone project focused on enterprise resource planning systems for SMEs.',
-    achievements: ['Dean\'s Lister', 'Best Capstone Award', 'ITSO Officer'],
+    school: 'San Pablo Colleges',
+    period: 'Aug 2021 – Jun 2025',
+    location: 'Hermanos Belen St., San Pablo City, Laguna',
+    gpa: '3.7',
+    description: 'Graduated with honors. Specialized in software development and systems analysis. Capstone project focused on evaluation systems for Schools.',
+    achievements: ['Cum Laude'],
   },
 ];
 
 export const skills = {
-  'Languages': ['TypeScript', 'JavaScript', 'Python', 'SQL', 'Java', 'PHP'],
+  'Languages': ['TypeScript', 'JavaScript', 'Ruby', 'SQL', 'Java', 'PHP'],
   'Frontend': ['React', 'Vite', 'Tailwind CSS', 'Framer Motion', 'HTML5', 'CSS3'],
   'Backend': ['Node.js', 'Express', 'REST APIs', 'PostgreSQL', 'MySQL'],
   'Tools & Platforms': ['Git', 'GitHub', 'Figma', 'VS Code', 'Postman', 'Docker'],
@@ -70,8 +149,8 @@ export const skills = {
 };
 
 export const contact = {
-  email: 'vansrzb@email.com',
+  email: 'ibrilata.dev@gmail.com',
   github: 'https://github.com/vansrzb',
   linkedin: 'https://linkedin.com/in/vansrzb',
-  location: 'Nasugbu, Batangas, PH',
+  location: 'Quezon, Province, PH',
 };

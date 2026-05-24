@@ -9,10 +9,9 @@ import Education from './components/Education';
 import Skills from './components/Skills';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import PortfolioChatbot from './components/PortfolioChatbot';
 
 export default function App() {
-  // sessionStorage persists across refreshes but clears when the tab is closed.
-  // First open → show loader → mark seen. Refresh → skip. New tab/close+reopen → show again.
   const [loaded, setLoaded] = useState(() => {
     const seen = sessionStorage.getItem('portfolio_loaded');
     if (seen) return true;
@@ -40,6 +39,9 @@ export default function App() {
             <Contact />
           </main>
           <Footer />
+
+          {/* AI Chatbot — always visible when portfolio is loaded */}
+          <PortfolioChatbot />
         </div>
       )}
     </>
