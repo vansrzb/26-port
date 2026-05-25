@@ -1,25 +1,27 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Menu, X } from 'lucide-react';
-import { navLinks } from '../data/portfolio';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, Mail, Menu, X } from "lucide-react";
+import { navLinks } from "../data/portfolio";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState('');
+  const [active, setActive] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const scrollTo = (section: string) => {
     const el = document.getElementById(section.toLowerCase());
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      setMenuOpen(false); // close first
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth" });
+      }, 100); // wait for drawer animation to finish
       setActive(section);
-      setMenuOpen(false);
     }
   };
 
@@ -200,21 +202,22 @@ export default function Navbar() {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`navbar-root ${scrolled ? 'scrolled' : 'top'}`}
+        className={`navbar-root ${scrolled ? "scrolled" : "top"}`}
       >
         <div className="navbar-inner">
-
           {/* Logo */}
           <motion.div
             className="logo-wrap"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
           >
             <div className="logo-mark">
               <img src="/profile-2.png" alt="Ivan Brilata" />
             </div>
-            <span className="logo-text">vans<span className="logo-accent">rzb</span></span>
+            <span className="logo-text">
+              vans<span className="logo-accent">rzb</span>
+            </span>
           </motion.div>
 
           {/* Desktop nav links */}
@@ -222,7 +225,7 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <motion.button
                 key={link}
-                className={`nav-link ${active === link ? 'active' : ''}`}
+                className={`nav-link ${active === link ? "active" : ""}`}
                 onClick={() => scrollTo(link)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
@@ -231,11 +234,16 @@ export default function Navbar() {
                   <motion.div
                     layoutId="nav-pill"
                     className="nav-pill"
-                    transition={{ type: 'spring', bounce: 0.18, duration: 0.38 }}
+                    transition={{
+                      type: "spring",
+                      bounce: 0.18,
+                      duration: 0.38,
+                    }}
                   />
                 )}
-                <span style={{ position: 'relative', zIndex: 1 }}>
-                  <span className="nav-prefix">./</span>{link}
+                <span style={{ position: "relative", zIndex: 1 }}>
+                  <span className="nav-prefix">./</span>
+                  {link}
                 </span>
               </motion.button>
             ))}
@@ -244,13 +252,14 @@ export default function Navbar() {
           {/* Right actions */}
           <div className="right-actions">
             <motion.a
-              href="mailto:ibrilata.dev@gmail.com"
+              href="/resume-latest.pdf"
+              download
               className="email-btn desktop-email"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
             >
-              <Mail size={13} />
-              Email Me
+              <Download size={13} />
+              Resume
             </motion.a>
 
             <button
@@ -269,11 +278,18 @@ export default function Navbar() {
             <motion.div
               className="mobile-drawer"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div style={{ padding: '12px 20px 22px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div
+                style={{
+                  padding: "12px 20px 22px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                }}
+              >
                 {navLinks.map((link, i) => (
                   <motion.button
                     key={link}
@@ -283,20 +299,21 @@ export default function Navbar() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.045 }}
                   >
-                    <span style={{ color: 'rgba(96,165,250,0.38)' }}>./</span>
+                    <span style={{ color: "rgba(96,165,250,0.38)" }}>./</span>
                     {link}
                   </motion.button>
                 ))}
                 <motion.a
-                  href="mailto:ibrilata.dev@gmail.com"
+                  href="/resume-latest.pdf"
+                  download
                   className="email-btn"
-                  style={{ marginTop: 10, alignSelf: 'flex-start' }}
+                  style={{ marginTop: 10, alignSelf: "flex-start" }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: navLinks.length * 0.045 + 0.05 }}
                 >
-                  <Mail size={13} />
-                  Email Me
+                  <Download size={13} />
+                  Resume
                 </motion.a>
               </div>
             </motion.div>
