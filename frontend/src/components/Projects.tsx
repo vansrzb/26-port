@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ExternalLink, GitFork, Star } from 'lucide-react';
+import { GitFork, Star } from 'lucide-react';
 import SectionWrapper, { SectionHeading, fadeUpVariants } from './SectionWrapper';
 import { projects } from '../data/portfolio';
 
