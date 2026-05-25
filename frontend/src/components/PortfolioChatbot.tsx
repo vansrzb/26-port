@@ -211,7 +211,7 @@ export default function PortfolioChatbot() {
         content: m.content,
       }));
 
-      const res = await fetch("/api/chat", {
+      const res = await fetch("https://vansrzb.vercel.app/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -227,7 +227,20 @@ export default function PortfolioChatbot() {
         }),
       });
 
-      const data = await res.json();
+      console.log("📡 STATUS:", res.status);
+      console.log("📡 OK:", res.ok);
+      console.log("📡 URL:", res.url);
+
+      const raw = await res.text(); // IMPORTANT: read raw first
+      console.log("📦 RAW RESPONSE:", raw);
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (err) {
+        console.error("❌ JSON PARSE ERROR:", err);
+        throw new Error("Server did not return JSON");
+      }
 
       const reply = data.reply || "Sorry, I couldn't get a response right now.";
 
