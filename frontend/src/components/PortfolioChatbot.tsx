@@ -49,7 +49,6 @@ function renderContent(text: string) {
   });
 }
 
-// Hook to detect mobile viewport
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -62,8 +61,43 @@ function useIsMobile() {
   return isMobile;
 }
 
+// Message bubble icon for the FAB
+function MessageIcon({ size = 22, color = 'white' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// Close (X) icon
+function CloseIcon({ size = 18, color = 'white' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M18 6L6 18M6 6l12 12" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// Send icon
+function SendIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M22 2L11 13" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function PortfolioChatbot() {
   const [open, setOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -79,14 +113,20 @@ export default function PortfolioChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
+  // Auto-hide tooltip after 6 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTooltip(false), 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (open) {
       setHasNotification(false);
+      setShowTooltip(false);
       setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [open]);
 
-  // Prevent body scroll on mobile when chat is open
   useEffect(() => {
     if (isMobile) {
       document.body.style.overflow = open ? 'hidden' : '';
@@ -164,7 +204,6 @@ export default function PortfolioChatbot() {
     }
   };
 
-  // Panel dimensions — full-screen sheet on mobile, floating on desktop
   const panelStyle: React.CSSProperties = isMobile
     ? {
         position: 'fixed',
@@ -177,12 +216,14 @@ export default function PortfolioChatbot() {
       }
     : {
         position: 'absolute',
-        bottom: 64,
+        bottom: 72,
         right: 0,
         width: 320,
         height: 480,
         borderRadius: 16,
       };
+
+  const fabSize = isMobile ? 48 : 52;
 
   return (
     <>
@@ -194,84 +235,155 @@ export default function PortfolioChatbot() {
         .cb-scroll::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 4px; }
         .cb-input::placeholder { color: rgba(96,165,250,0.3); }
         .cb-input:focus { outline: none; }
-        .cb-fab { transition: transform 0.2s ease, box-shadow 0.25s ease; }
-        .cb-fab:hover { transform: scale(1.07); }
         .cb-chip { transition: all 0.15s ease; }
         .cb-chip:hover { background: rgba(59,130,246,0.18) !important; border-color: rgba(96,165,250,0.45) !important; }
         .cb-chip:active { transform: scale(0.96); }
         .cb-send:hover:not(:disabled) { background: rgba(37,99,235,0.85) !important; }
         .cb-send:disabled { opacity: 0.35; cursor: not-allowed; }
-        /* iOS safe area support */
         .cb-input-area { padding-bottom: max(9px, env(safe-area-inset-bottom)); }
+        @keyframes pulse-ring {
+          0%   { box-shadow: 0 0 0 0   rgba(59,130,246,0.45); }
+          70%  { box-shadow: 0 0 0 10px rgba(59,130,246,0); }
+          100% { box-shadow: 0 0 0 0   rgba(59,130,246,0); }
+        }
+        .cb-fab-pulse { animation: pulse-ring 2.5s ease-out infinite; }
       `}</style>
 
-      {/* Fixed anchor — FAB always bottom-right */}
       <div
         className="cb-root"
         style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9998 }}
       >
+        {/* Floating tooltip bubble */}
+        <AnimatePresence>
+          {showTooltip && !open && (
+            <motion.div
+              key="tooltip"
+              initial={{ opacity: 0, y: 8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.95 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              style={{
+                position: 'absolute',
+                bottom: fabSize + 16,
+                right: 0,
+                background: '#0c1527',
+                border: '1px solid rgba(59,130,246,0.3)',
+                borderRadius: '14px 14px 4px 14px',
+                padding: '10px 14px',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
+              }}
+              onClick={() => setOpen(true)}
+            >
+              {/* Tail */}
+              <div style={{
+                position: 'absolute',
+                bottom: -7,
+                right: 18,
+                width: 0,
+                height: 0,
+                borderLeft: '6px solid transparent',
+                borderTop: '7px solid rgba(59,130,246,0.3)',
+              }} />
+              <div style={{
+                position: 'absolute',
+                bottom: -6,
+                right: 19,
+                width: 0,
+                height: 0,
+                borderLeft: '5px solid transparent',
+                borderTop: '6px solid #0c1527',
+                zIndex: 1,
+              }} />
+              <p style={{
+                margin: 0,
+                fontSize: 12,
+                color: 'rgba(203,213,225,0.9)',
+                fontFamily: 'inherit',
+                lineHeight: 1.5,
+              }}>
+                Want to know more about Ivan?
+              </p>
+              <p style={{
+                margin: '2px 0 0',
+                fontSize: 10,
+                color: 'rgba(96,165,250,0.6)',
+                fontFamily: 'inherit',
+              }}>
+                Ask me anything
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* FAB */}
         <motion.button
-          className="cb-fab"
+          className={!open ? 'cb-fab-pulse' : ''}
           onClick={() => setOpen(o => !o)}
-          whileTap={{ scale: 0.93 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.07 }}
           aria-label={open ? 'Close chat' : 'Open chat with Ivan'}
           style={{
-            width: isMobile ? 48 : 52,
-            height: isMobile ? 48 : 52,
+            width: fabSize,
+            height: fabSize,
             borderRadius: '50%',
-            border: '1.5px solid rgba(59,130,246,0.45)',
-            background: 'linear-gradient(135deg, #080810 0%, #0c1527 100%)',
+            border: 'none',
+            background: open
+              ? 'linear-gradient(135deg, #0c1527 0%, #1e3a5f 100%)'
+              : 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
             cursor: 'pointer',
             padding: 0,
-            overflow: 'hidden',
+            overflow: 'visible',
             position: 'relative',
             zIndex: 9999,
-            boxShadow: open
-              ? '0 0 0 3px rgba(59,130,246,0.25), 0 6px 24px rgba(59,130,246,0.2)'
-              : '0 0 0 1px rgba(59,130,246,0.1), 0 6px 20px rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.25s ease',
           }}
         >
           <AnimatePresence mode="wait">
             {open ? (
               <motion.span
-                key="x"
-                initial={{ opacity: 0, rotate: -90 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                exit={{ opacity: 0, rotate: 90 }}
-                transition={{ duration: 0.16 }}
-                style={{
-                  position: 'absolute', inset: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#60a5fa', fontSize: 18, fontWeight: 300,
-                }}
+                key="close"
+                initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                transition={{ duration: 0.18 }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                ✕
+                <CloseIcon size={18} color="white" />
               </motion.span>
             ) : (
-              <motion.img
-                key="avatar"
+              <motion.span
+                key="msg"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.16 }}
-                src="/profile-2.png"
-                alt="Ivan"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+                transition={{ duration: 0.18 }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <MessageIcon size={22} color="white" />
+              </motion.span>
             )}
           </AnimatePresence>
 
+          {/* Notification dot */}
           {hasNotification && !open && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               style={{
-                position: 'absolute', top: 1, right: 1,
-                width: 10, height: 10, borderRadius: '50%',
-                background: '#3b82f6',
-                border: '2px solid #000',
-                boxShadow: '0 0 6px rgba(59,130,246,0.75)',
+                position: 'absolute',
+                top: 2,
+                right: 2,
+                width: 11,
+                height: 11,
+                borderRadius: '50%',
+                background: '#22d3ee',
+                border: '2px solid #04040e',
+                boxShadow: '0 0 6px rgba(34,211,238,0.7)',
               }}
             />
           )}
@@ -284,7 +396,7 @@ export default function PortfolioChatbot() {
               className="cb-panel"
               initial={isMobile
                 ? { opacity: 0, y: '100%' }
-                : { opacity: 0, y: 12, scale: 0.96 }}
+                : { opacity: 0, y: 14, scale: 0.96 }}
               animate={isMobile
                 ? { opacity: 1, y: 0 }
                 : { opacity: 1, y: 0, scale: 1 }}
@@ -306,77 +418,95 @@ export default function PortfolioChatbot() {
               <div
                 style={{
                   padding: isMobile ? '14px 16px' : '10px 14px',
+                  paddingTop: isMobile ? 'max(14px, env(safe-area-inset-top))' : '10px',
                   borderBottom: '1px solid rgba(59,130,246,0.1)',
                   background: 'rgba(8,8,24,0.98)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
                   flexShrink: 0,
-                  // Push below iOS status bar
-                  paddingTop: isMobile ? 'max(14px, env(safe-area-inset-top))' : '10px',
                 }}
               >
-                <div style={{ position: 'relative' }}>
-                  <img
-                    src="/profile-2.png"
-                    alt="Ivan"
-                    style={{
-                      width: isMobile ? 36 : 32,
-                      height: isMobile ? 36 : 32,
-                      borderRadius: '50%',
-                      border: '1px solid rgba(59,130,246,0.35)',
-                      objectFit: 'cover',
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: 'absolute', bottom: 0, right: 0,
-                      width: 8, height: 8, borderRadius: '50%',
-                      background: '#22d3ee',
-                      border: '2px solid #04040e',
-                      boxShadow: '0 0 5px rgba(34,211,238,0.65)',
-                    }}
-                  />
+                {/* Avatar: message icon circle */}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{
+                    width: isMobile ? 36 : 32,
+                    height: isMobile ? 36 : 32,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                    border: '1px solid rgba(59,130,246,0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <MessageIcon size={isMobile ? 16 : 14} color="white" />
+                  </div>
+                  {/* Online dot */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#22d3ee',
+                    border: '2px solid #04040e',
+                    boxShadow: '0 0 5px rgba(34,211,238,0.65)',
+                  }} />
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: isMobile ? 13 : 12, fontWeight: 500, color: '#dbeafe', letterSpacing: '0.03em' }}>
-                    Ivan Brilata
+                  <div style={{
+                    fontSize: isMobile ? 13 : 12,
+                    fontWeight: 500,
+                    color: '#dbeafe',
+                    letterSpacing: '0.03em',
+                  }}>
+                    Ivan's Assistant
                   </div>
-                  <div style={{ fontSize: 9, color: 'rgba(96,165,250,0.45)', letterSpacing: '0.1em', marginTop: 1 }}>
+                  <div style={{
+                    fontSize: 9,
+                    color: 'rgba(96,165,250,0.45)',
+                    letterSpacing: '0.1em',
+                    marginTop: 1,
+                  }}>
                     AI ASSISTANT · ONLINE
                   </div>
                 </div>
 
-                {/* Close button — visible & tap-friendly on mobile */}
+                {/* Close button on mobile */}
                 {isMobile && (
                   <button
                     onClick={() => setOpen(false)}
                     aria-label="Close chat"
                     style={{
-                      width: 36, height: 36,
+                      width: 36,
+                      height: 36,
                       borderRadius: '50%',
                       border: '1px solid rgba(59,130,246,0.2)',
                       background: 'rgba(59,130,246,0.08)',
                       color: '#60a5fa',
-                      fontSize: 16,
                       cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       flexShrink: 0,
                     }}
                   >
-                    ✕
+                    <CloseIcon size={16} color="#60a5fa" />
                   </button>
                 )}
 
-                {/* Decorative bars — desktop only */}
+                {/* Decorative bars on desktop */}
                 {!isMobile && (
                   <div style={{ display: 'flex', gap: 3 }}>
                     {[0.4, 0.22, 0.1].map((o, i) => (
                       <div
                         key={i}
                         style={{
-                          width: 2.5, height: 12, borderRadius: 2,
+                          width: 2.5,
+                          height: 12,
+                          borderRadius: 2,
                           background: `rgba(59,130,246,${o})`,
                         }}
                       />
@@ -413,18 +543,19 @@ export default function PortfolioChatbot() {
                     }}
                   >
                     {msg.role === 'assistant' && (
-                      <img
-                        src="/profile-2.png"
-                        alt="Ivan"
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          border: '1px solid rgba(59,130,246,0.25)',
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                        }}
-                      />
+                      <div style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                        border: '1px solid rgba(59,130,246,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <MessageIcon size={11} color="white" />
+                      </div>
                     )}
                     <div
                       style={{
@@ -463,15 +594,19 @@ export default function PortfolioChatbot() {
                     animate={{ opacity: 1, y: 0 }}
                     style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}
                   >
-                    <img
-                      src="/profile-2.png"
-                      alt="Ivan"
-                      style={{
-                        width: 24, height: 24, borderRadius: '50%',
-                        border: '1px solid rgba(59,130,246,0.25)',
-                        objectFit: 'cover', flexShrink: 0,
-                      }}
-                    />
+                    <div style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
+                      border: '1px solid rgba(59,130,246,0.25)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <MessageIcon size={11} color="white" />
+                    </div>
                     <div
                       style={{
                         padding: '10px 13px',
@@ -489,7 +624,9 @@ export default function PortfolioChatbot() {
                           animate={{ y: [0, -4, 0], opacity: [0.35, 1, 0.35] }}
                           transition={{ duration: 0.65, repeat: Infinity, delay, ease: 'easeInOut' }}
                           style={{
-                            width: 4, height: 4, borderRadius: '50%',
+                            width: 4,
+                            height: 4,
+                            borderRadius: '50%',
                             background: '#3b82f6',
                           }}
                         />
@@ -521,7 +658,6 @@ export default function PortfolioChatbot() {
                           cursor: 'pointer',
                           letterSpacing: '0.02em',
                           fontFamily: 'inherit',
-                          // Ensure tap targets are at least 44px tall on mobile
                           minHeight: isMobile ? 36 : 'auto',
                         }}
                       >
@@ -563,7 +699,6 @@ export default function PortfolioChatbot() {
                     onKeyDown={handleKey}
                     placeholder="Ask about Ivan..."
                     disabled={loading}
-                    // Prevent iOS zoom on focus (font-size >= 16px)
                     style={{
                       flex: 1,
                       background: 'transparent',
@@ -593,10 +728,7 @@ export default function PortfolioChatbot() {
                       flexShrink: 0,
                     }}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                      <path d="M22 2L11 13" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <SendIcon />
                   </button>
                 </div>
                 <div
