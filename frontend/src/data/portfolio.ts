@@ -28,7 +28,7 @@ export const experience = [
 
 export const projects = [
   {
-    title: 'Customer Relationship Management',
+    title: 'CRM System',
     description:
       'Integrated a real-time CRM system using Next.js and WebSockets, reducing operational complexity by 65% and enabling instant data synchronization.',
     tags: ['TypeScript', 'Next.js', 'MySQL', 'WebSockets'],
@@ -36,17 +36,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/customer-relationship-management-system',
-    featured: true,
-  },
-  {
-    title: 'Records Management System',
-    description:
-      'Developed a digital records management system, reducing storage complexity by 60% and improving document retrieval efficiency.',
-    tags: ['JavaScript', 'Node.js', 'MySQL'],
-    date: 'Jul 31, 2025',
-    role: 'Full-Stack Developer',
-    link: '#',
-    github: 'https://github.com/kevinbalocos/records-management-cong-system',
+    image: 'https://opengraph.githubassets.com/1/kevinbalocos/customer-relationship-management-system',
     featured: false,
   },
   {
@@ -58,7 +48,20 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/lantern',
-    featured: true,
+    image: 'https://opengraph.githubassets.com/1/vansrzb/lantern',
+    featured: false,
+  },
+  {
+    title: 'Records System',
+    description:
+      'Developed a digital records management system, reducing storage complexity by 60% and improving document retrieval efficiency.',
+    tags: ['JavaScript', 'Node.js', 'MySQL'],
+    date: 'Jul 31, 2025',
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/kevinbalocos/records-management-cong-system',
+    image: 'https://opengraph.githubassets.com/1/kevinbalocos/records-management-cong-system',
+    featured: false,
   },
   {
     title: 'Business Permit System',
@@ -69,6 +72,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/business-permit-system',
+    image: 'https://opengraph.githubassets.com/1/kevinbalocos/business-permit-system',
     featured: false,
   },
   {
@@ -80,7 +84,8 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/capstone-project-eva-lution',
-    featured: true,
+    image: 'https://opengraph.githubassets.com/1/vansrzb/capstone-project-eva-lution',
+    featured: false,
   },
   {
     title: 'DCSI Website',
@@ -91,6 +96,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/DCSI-WEBSITE',
+    image: 'https://opengraph.githubassets.com/1/kevinbalocos/DCSI-WEBSITE',
     featured: false,
   },
   {
@@ -102,6 +108,7 @@ export const projects = [
     role: 'Backend Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/Queueing-system',
+    image: 'https://opengraph.githubassets.com/1/kevinbalocos/Queueing-system',
     featured: false,
   },
   {
@@ -113,6 +120,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/inventory-management-system-cake-shop',
+    image: 'https://opengraph.githubassets.com/1/vansrzb/inventory-management-system-cake-shop',
     featured: false,
   },
   {
@@ -123,8 +131,9 @@ export const projects = [
     date: null,
     role: 'Full-Stack Developer',
     link: '#',
-    featured: false,
     github: 'https://github.com/vansrzb/sales-dashboard',
+    image: 'https://opengraph.githubassets.com/1/vansrzb/sales-dashboard',
+    featured: false,
   },
 ];
 
