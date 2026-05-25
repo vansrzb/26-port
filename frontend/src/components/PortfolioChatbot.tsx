@@ -228,9 +228,8 @@ export default function PortfolioChatbot() {
       });
 
       const data = await res.json();
-      const reply =
-        data.content?.map((b: { text?: string }) => b.text ?? "").join("") ??
-        "Sorry, I couldn't get a response right now.";
+
+      const reply = data.reply || "Sorry, I couldn't get a response right now.";
 
       setMessages((prev) => [
         ...prev,
