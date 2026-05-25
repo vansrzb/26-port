@@ -211,7 +211,7 @@ export default function PortfolioChatbot() {
         content: m.content,
       }));
 
-      const res = await fetch("/api/chat", {
+      const res = await fetch("https://vansrzb.vercel.app/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
