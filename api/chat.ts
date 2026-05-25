@@ -1,17 +1,14 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // ✅ CORS HEADERS (REQUIRED)
+  // ✅ CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // ✅ Handle preflight request
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
-  console.log("🔥 API HIT:", req.method);
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -22,29 +19,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log("📩 Incoming messages:", messages);
 
+    // 🧠 Call Groq API
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
-          messages,
+          model: "llama-3.3-70b-versatile", // ✅ your working style
+          messages: messages,
           temperature: 0.7,
+          max_tokens: 256,
         }),
-      },
+      }
     );
 
     const data = await response.json();
 
-    console.log("🤖 Groq response:", data);
+    console.log("🤖 FULL GROQ RESPONSE:", JSON.stringify(data, null, 2));
 
-    return res.status(200).json({
-      reply: data?.choices?.[0]?.message?.content || "No response",
-    });
+    if (!response.ok) {
+      console.error("❌ Groq API error:", data);
+      return res.status(500).json({ error: data });
+    }
+
+    const reply = data?.choices?.[0]?.message?.content;
+
+    if (!reply) {
+      return res.status(500).json({
+        error: "No response from Groq",
+        raw: data,
+      });
+    }
+
+    return res.status(200).json({ reply });
   } catch (error: any) {
     console.error("💥 Server error:", error);
 
