@@ -28,6 +28,18 @@ export const experience = [
 
 export const projects = [
   {
+    title: 'FORMA',
+    description:
+      'A modern and user-friendly clothing line website that offers stylish and affordable fashion for everyone through a clean and easy online shopping experience.',
+    tags: ['TypeScript', 'Tailwind CSS', 'Vite'],
+    date: null,
+    role: 'Full-Stack Developer',
+    link: '#',
+    github: 'https://github.com/vansrzb/Forma',
+    image: 'forma.jpg',
+    featured: false,
+  },
+  {
     title: 'CRM System',
     description:
       'Integrated a real-time CRM system using Next.js and WebSockets, reducing operational complexity by 65% and enabling instant data synchronization.',
