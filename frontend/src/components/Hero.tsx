@@ -49,6 +49,10 @@ const techStack = [
     name: "Ruby",
     logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg",
   },
+  {
+    name: "Java",
+    logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
+  },
 ];
 
 // ─── ANIMATED COUNTER ─────────────────────────────────────────
