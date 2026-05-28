@@ -60,7 +60,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/lantern',
-    image: 'https://opengraph.githubassets.com/1/vansrzb/lantern',
+    image: 'lantern.jpg',
     featured: false,
   },
   {
@@ -72,7 +72,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/records-management-cong-system',
-    image: 'https://opengraph.githubassets.com/1/kevinbalocos/records-management-cong-system',
+    image: 'rms.jpg',
     featured: false,
   },
   {
@@ -84,7 +84,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/business-permit-system',
-    image: 'https://opengraph.githubassets.com/1/kevinbalocos/business-permit-system',
+    image: 'business.jpg',
     featured: false,
   },
   {
@@ -96,7 +96,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/capstone-project-eva-lution',
-    image: 'https://opengraph.githubassets.com/1/vansrzb/capstone-project-eva-lution',
+    image: 'evaluation.png',
     featured: false,
   },
   {
@@ -120,7 +120,7 @@ export const projects = [
     role: 'Backend Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/Queueing-system',
-    image: 'https://opengraph.githubassets.com/1/kevinbalocos/Queueing-system',
+    image: 'queueing.jpg',
     featured: false,
   },
   {
@@ -132,7 +132,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/inventory-management-system-cake-shop',
-    image: 'https://opengraph.githubassets.com/1/vansrzb/inventory-management-system-cake-shop',
+    image: 'cakeshop.png',
     featured: false,
   },
   {
@@ -144,7 +144,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/vansrzb/sales-dashboard',
-    image: 'https://opengraph.githubassets.com/1/vansrzb/sales-dashboard',
+    image: 'sales.png',
     featured: false,
   },
 ];
