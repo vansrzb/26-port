@@ -48,7 +48,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/customer-relationship-management-system',
-    image: 'https://opengraph.githubassets.com/1/kevinbalocos/customer-relationship-management-system',
+    image: 'crm-system.jpg',
     featured: false,
   },
   {
@@ -108,7 +108,7 @@ export const projects = [
     role: 'Full-Stack Developer',
     link: '#',
     github: 'https://github.com/kevinbalocos/DCSI-WEBSITE',
-    image: 'https://opengraph.githubassets.com/1/kevinbalocos/DCSI-WEBSITE',
+    image: 'dcsi-website.jpg',
     featured: false,
   },
   {
