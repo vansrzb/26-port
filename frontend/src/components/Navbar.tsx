@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Mail, Menu, X } from "lucide-react";
+import { Download, Menu, X } from "lucide-react";
 import { navLinks } from "../data/portfolio";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -14,13 +16,38 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("en-US", {
+          timeZone: "Asia/Manila",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+      );
+      setDate(
+        now.toLocaleDateString("en-US", {
+          timeZone: "Asia/Manila",
+          month: "short",
+          day: "2-digit",
+        })
+      );
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const scrollTo = (section: string) => {
     const el = document.getElementById(section.toLowerCase());
     if (el) {
-      setMenuOpen(false); // close first
+      setMenuOpen(false);
       setTimeout(() => {
         el.scrollIntoView({ behavior: "smooth" });
-      }, 100); // wait for drawer animation to finish
+      }, 100);
       setActive(section);
     }
   };
@@ -40,7 +67,6 @@ export default function Navbar() {
           background: rgba(2, 4, 9, 0.85);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          /* No border-bottom — eliminates the bright white scroll line */
           box-shadow:
             0 1px 0 rgba(96,165,250,0.07),
             0 4px 24px rgba(0,0,0,0.45);
@@ -86,7 +112,6 @@ export default function Navbar() {
         }
         .logo-accent { color: #60a5fa; }
 
-        /* Desktop nav links — shown via media query */
         .desktop-nav {
           display: none;
           align-items: center;
@@ -95,6 +120,7 @@ export default function Navbar() {
         @media (min-width: 768px) {
           .desktop-nav { display: flex; }
           .desktop-email { display: flex !important; }
+          .desktop-clock { display: flex !important; }
           .hamburger-btn { display: none !important; }
         }
         .nav-link {
@@ -125,6 +151,51 @@ export default function Navbar() {
           align-items: center;
           gap: 10px;
         }
+
+        /* Timezone clock */
+        .tz-clock {
+          display: none;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 13px;
+          background: rgba(37,99,235,0.06);
+          border: 0.5px solid rgba(96,165,250,0.14);
+          border-radius: 8px;
+        }
+        .tz-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          background: #60a5fa;
+          opacity: 0.7;
+          flex-shrink: 0;
+          animation: tz-pulse 2s ease-in-out infinite;
+        }
+        @keyframes tz-pulse {
+          0%, 100% { opacity: 0.45; }
+          50% { opacity: 0.9; }
+        }
+        .tz-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1px;
+        }
+        .tz-time {
+          font-family: 'DM Mono', monospace;
+          font-size: 11px;
+          font-weight: 500;
+          color: rgba(180,210,255,0.82);
+          letter-spacing: 0.06em;
+          line-height: 1;
+        }
+        .tz-label {
+          font-family: 'DM Mono', monospace;
+          font-size: 9px;
+          color: rgba(96,165,250,0.45);
+          letter-spacing: 0.1em;
+          line-height: 1;
+        }
+
         .email-btn {
           display: flex;
           align-items: center;
@@ -148,6 +219,7 @@ export default function Navbar() {
           transform: translateY(-1px);
         }
         .desktop-email { display: none; }
+        .desktop-clock { display: none; }
 
         .hamburger-btn {
           background: transparent;
@@ -167,7 +239,6 @@ export default function Navbar() {
           background: rgba(96,165,250,0.06);
         }
 
-        /* Mobile drawer */
         .mobile-drawer {
           overflow: hidden;
           background: rgba(2,4,9,0.94);
@@ -195,6 +266,16 @@ export default function Navbar() {
         .mobile-link:hover {
           background: rgba(96,165,250,0.06);
           color: rgba(220,235,255,0.85);
+        }
+        .mobile-clock {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          margin-top: 8px;
+          background: rgba(37,99,235,0.06);
+          border: 0.5px solid rgba(96,165,250,0.12);
+          border-radius: 8px;
         }
       `}</style>
 
@@ -251,6 +332,15 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="right-actions">
+            {/* Timezone Clock — desktop only */}
+            <div className="tz-clock desktop-clock">
+              <div className="tz-dot" />
+              <div className="tz-inner">
+                <span className="tz-time">{time}</span>
+                <span className="tz-label">{date} · PH / PHT</span>
+              </div>
+            </div>
+
             <motion.a
               href="/brilata-resume-ats.pdf"
               download
@@ -303,11 +393,26 @@ export default function Navbar() {
                     {link}
                   </motion.button>
                 ))}
+
+                {/* Clock row in mobile drawer */}
+                <motion.div
+                  className="mobile-clock"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: navLinks.length * 0.045 }}
+                >
+                  <div className="tz-dot" />
+                  <div className="tz-inner">
+                    <span className="tz-time">{time}</span>
+                    <span className="tz-label">{date} · PH / PHT</span>
+                  </div>
+                </motion.div>
+
                 <motion.a
                   href="/brilata-resume-ats.pdf"
                   download
                   className="email-btn"
-                  style={{ marginTop: 10, alignSelf: "flex-start" }}
+                  style={{ marginTop: 6, alignSelf: "flex-start" }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: navLinks.length * 0.045 + 0.05 }}
