@@ -715,8 +715,8 @@ export default function Hero() {
           }}
         >
           {[
-            { t: 10, label: "Systems Designed" },
-            { t: 7, label: "Projects Shipped" },
+            { t: 11, label: "Systems Designed" },
+            { t: 8, label: "Projects Shipped" },
           ].map((s, i) => (
             <div key={s.label}>
               <div
